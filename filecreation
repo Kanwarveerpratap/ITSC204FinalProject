@@ -1,0 +1,67 @@
+section .data 
+file db 'readme.txt', 0x0
+
+section .bss
+
+file_fd resb 1      ; file desprictor for new file created
+
+section .text
+
+global _start
+
+_start:
+
+    _create:                    ; creating the file
+
+        mov rax, 0x55
+        mov rdi, file
+        mov rsi, 0777           ; read, write and execution to all
+        syscall
+
+        mov [file_fd], rax      ; moving file desprictor for new file created
+        ret
+
+
+    _write:
+
+        push rbp
+        mov rbp, rsp
+        push rdi
+        push rsi
+
+        mov rax, 0x1
+        mov rdi, [file_fd]
+        mov rsi, [rbp + 0x10]       ; data to be written to file
+        mov rdx, [rbp + 0x18]       ; lenght of data
+        syscall
+
+        pop rsi
+        pop rdi
+        pop rbp
+        ret 0x10                    ; clean up stack upon return
+
+
+    _read:
+
+        push rbp
+        mov rbp, rsp
+        push rdi
+        push rsi
+
+        mov rax, 0x0
+        mov rdi, [file_fd]
+        mov rsi, [rbp + 0x10]       ; store data from file
+        mov rdx, [rbp + 0x18]
+        syscall
+
+        pop rsi
+        pop rdi
+        pop rbp
+        ret 0x10
+
+    _close:
+
+        mov rax, 0x3        
+        mov rdi, [file_fd]
+        syscall 
+        ret
